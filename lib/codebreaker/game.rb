@@ -13,36 +13,40 @@ module Codebreaker
     def guess(guess)
       raise 'Wrong lenght of guess' if guess.size != @secret.size
 
-      position_match_count = 0
-      number_match_count = 0
-      guess_hash = string_to_hash(guess)
-      secret_hash = string_to_hash(@secret)
-      guess_hash.keys.each do |char|
-        position_match_count += (array_value_of_key_in_hash(guess_hash, char) & array_value_of_key_in_hash(secret_hash, char)).size
-        number_match_count += [array_value_of_key_in_hash(guess_hash, char).size, array_value_of_key_in_hash(secret_hash, char).size].min
-      end
-
-      mark = ''
-      mark << ('+' * position_match_count)
-      mark << ('-' * (number_match_count - position_match_count))
-
-      @output.puts mark
+      @output.puts '+'*exact_match_count(guess) + '-'*number_match_count(guess)
     end
 
     private
 
+    def exact_match_count(guess)
+      (0..3).collect{|i| exact_match?(guess, i) ? 1 : 0}.reduce(:+)
+    end
+
+    def number_match_count(guess)
+      @secret_hash = string_to_hash(@secret)
+      (0..3).collect{|i| char_match?(guess, i) ? 1 : 0}.reduce(:+)
+    end
+
+    def exact_match?(guess, index)
+      guess[index] == @secret[index]
+    end
+
+    def char_match?(guess, index)
+      return false if exact_match?(guess, index)
+
+      @secret_hash[guess[index]] ||= 0
+      @secret_hash[guess[index]] -= 1
+      return @secret_hash[guess[index]] >= 0
+    end
+
     def string_to_hash(str)
       hsh = {}
-      str.split('').each_with_index do |char, i|
-        hsh[char] ||= []
-        hsh[char] <<   i
+      str.split('').each do |char|
+        hsh[char] ||= 0
+        hsh[char] += 1
       end
 
       return hsh
-    end
-
-    def array_value_of_key_in_hash(hsh, key)
-      hsh[key] || []
     end
   end
 end
