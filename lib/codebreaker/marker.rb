@@ -8,6 +8,10 @@ class Marker
   end
 
   def number_match_count
+    total_match_count - exact_match_count
+  end
+
+  def total_match_count
     @secret_hash = string_to_hash(@secret)
     (0...(@guess.length)).collect{|i| char_match?(i) ? 1 : 0}.reduce(:+)
   end
@@ -19,8 +23,6 @@ class Marker
   end
 
   def char_match?(index)
-    return false if exact_match?(index)
-
     @secret_hash[@guess[index]] ||= 0
     @secret_hash[@guess[index]] -= 1
     return @secret_hash[@guess[index]] >= 0
